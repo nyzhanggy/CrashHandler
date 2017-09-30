@@ -11,6 +11,7 @@
 
 @interface DDCatchCrash : NSObject
 + (void)startCatch;
++ (void)addCrashLog:(NSString *)crashLog;
 + (NSArray *)crashLogList;
 + (NSString *)contentWithFileName:(NSString *)fileName;
 + (BOOL)removWithFileName:(NSString *)fileName;

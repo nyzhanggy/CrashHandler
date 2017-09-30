@@ -377,6 +377,7 @@
 				2269B2061F0919690014CA39 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

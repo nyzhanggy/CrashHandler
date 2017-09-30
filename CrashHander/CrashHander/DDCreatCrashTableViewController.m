@@ -8,14 +8,33 @@
 
 #import "DDCreatCrashTableViewController.h"
 #import <objc/runtime.h>
+#import "NSObject+KVOSafe.h"
+#import "CrashSafeConfig.h"
 
 #define SuppressPerformSelectorLeakWarning(Stuff) \
-do { \
+ { \
 _Pragma("clang diagnostic push") \
 _Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"") \
 Stuff; \
 _Pragma("clang diagnostic pop") \
-} while (0)
+}
+
+
+@interface Person : NSObject
+
+@end
+
+@implementation Person
+
+@end
+
+@interface Men : Person
+
+@end
+
+@implementation Men
+
+@end
 
 @interface DDCreatCrashTableViewController () {
     NSArray *_dataArray;
@@ -28,9 +47,8 @@ _Pragma("clang diagnostic pop") \
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    _dataArray = @[@"unrecognized selector",@"set nil for dictionary",@"add self for self ",@"NSRangeException",@"KVO",@"set nil for array"];
-
-    [self addObserver:self forKeyPath:@"view" options:NSKeyValueObservingOptionNew context:nil];
+    _dataArray = @[@"unrecognized selector",@"set nil for dictionary",@"KVO",@"set nil for array",@"change title"];
+    self.autoManagerKVO = YES;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -59,14 +77,11 @@ _Pragma("clang diagnostic pop") \
     SuppressPerformSelectorLeakWarning
         ([self performSelector:NSSelectorFromString([NSString stringWithFormat:@"crash%td",indexPath.row]) withObject:nil];
     );
-
-
     
 }
+
 - (void)crash0 {
-     NSString *str = (NSString *)self;
-    
-    
+    NSString *str = (NSString *)self;
     NSLog(@"%td",str.length);
 }
 
@@ -78,23 +93,29 @@ _Pragma("clang diagnostic pop") \
                            };
     NSLog(@"dict is : %@", dict);
 }
+
+
 - (void)crash2 {
-    [self.view addSubview:self.view];
+    [self addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:nil];
 }
 
 - (void)crash3 {
-    
-    NSArray *arr = @[@"1"];
-    NSLog(@"%@",arr[3]);
-}
-- (void)crash4 {
-    [self removeObserver:self forKeyPath:@"view"];
-}
-- (void)crash5 {
     NSString *str = nil;
     NSMutableArray *array = [NSMutableArray arrayWithObjects:str, nil];
     NSLog(@"%@",@[str]);
-    [array addObject:str];
+    NSString *firstObj = array.firstObject;
+    NSLog(@"%td",firstObj.length);
     
+}
+
+- (void)crash4 {
+    self.title = @"title";
+}
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if ([keyPath isEqualToString:@"title"]) {
+        NSLog(@"title have changed");
+        return;
+    }
+    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 @end

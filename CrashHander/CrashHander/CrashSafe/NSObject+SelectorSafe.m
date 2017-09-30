@@ -46,6 +46,12 @@ void* emptyMethodIMP(){
 #endif
 
 - (id)dd_forwardingTargetForSelector:(SEL)aSelector {
-    return [_UnregSelObjectProxy sharedInstance];
+    
+    if (IS_CUSTOM_CLASS) {
+        return [_UnregSelObjectProxy sharedInstance];
+    }
+    
+    return [self dd_forwardingTargetForSelector:aSelector];
+    
 }
 @end

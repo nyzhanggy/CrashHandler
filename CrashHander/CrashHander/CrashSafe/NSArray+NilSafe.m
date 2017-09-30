@@ -9,8 +9,12 @@
 #import "NSArray+NilSafe.h"
 #import <objc/runtime.h>
 #import "NSObject+DDSwizzleMethod.h"
+#import "CrashSafeConfig.h"
 
 @implementation NSArray (NilSafe)
+
+#if dictionary_nil_safe_on
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -18,6 +22,8 @@
         [self swizzleInstanceMethod:@selector(initWithObjects:count:) withNew:@selector(dd_initWithObjects:count:)];
     });
 }
+#endif
+
 + (instancetype)dd_arrayWithObjects:(const id  _Nonnull __unsafe_unretained *)objects count:(NSUInteger)cnt {
     id safeObjects[cnt];
     NSUInteger j = 0;
@@ -45,21 +51,7 @@
     return [self dd_initWithObjects:safeObjects count:cnt];
 }
 
-@end
-
-@implementation NSMutableArray (NilSafe)
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self swizzleInstanceMethod:@selector(insertObject:atIndex:) withNew:@selector(dd_insertObject:atIndex:)];
-    });
-}
-- (void)dd_insertObject:(id)anObject atIndex:(NSUInteger)index {
-    if (!anObject) {
-        [self dd_insertObject:[NSNull null] atIndex:index];
-    } else {
-        [self dd_insertObject:anObject atIndex:index];
-    }
-}
 
 @end
+
+

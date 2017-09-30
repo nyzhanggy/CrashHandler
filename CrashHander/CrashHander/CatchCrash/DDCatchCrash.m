@@ -25,8 +25,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     
     NSString *exceptionInfo = [NSString stringWithFormat:@"Exception reason：%@\nException name：%@\nException stack：%@",name, reason, stackArray];
 
-    NSString *filePath = [DDCatchCrash filePath];
-    [exceptionInfo writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    [DDCatchCrash addCrashLog:exceptionInfo];
 }
 
 
@@ -74,7 +73,11 @@ void sighandler(int signal) {
     signal(SIGSEGV, sighandler);
 }
 
++ (void)addCrashLog:(NSString *)crashLog {
+    NSString *filePath = [DDCatchCrash filePath];
+    [crashLog writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
 
+}
 + (BOOL)removWithFileName:(NSString *)fileName {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     

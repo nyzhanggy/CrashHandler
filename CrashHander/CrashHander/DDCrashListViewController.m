@@ -12,6 +12,7 @@
 
 @interface DDCrashListViewController ()<UITableViewDataSource,UITableViewDelegate>
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (nonatomic, strong) NSMutableArray *dataArray;
 
 
 @end
@@ -21,10 +22,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.    
-    NSLog(@"%@",[DDCatchCrash crashLogList]);
+    
+    _dataArray = [NSMutableArray arrayWithArray:[DDCatchCrash crashLogList]];
+    
     UIRefreshControl *refreshControl = [[UIRefreshControl alloc] init];
     [refreshControl addTarget:self action:@selector(startRefresh) forControlEvents:UIControlEventValueChanged];
     self.tableView.refreshControl = refreshControl;
+    
 }
 
 - (IBAction)deleteAll:(id)sender {
@@ -32,11 +36,12 @@
     [self.tableView reloadData];
 }
 - (void)startRefresh {
+    _dataArray = [NSMutableArray arrayWithArray:[DDCatchCrash crashLogList]];
     [self.tableView reloadData];
     [self.tableView.refreshControl endRefreshing];
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [DDCatchCrash crashLogList].count;
+    return _dataArray.count;
 }
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
@@ -44,7 +49,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"cell"];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
-    cell.textLabel.text = [DDCatchCrash crashLogList][indexPath.row];
+    cell.textLabel.text = _dataArray[indexPath.row];
     return cell;
 }
 
@@ -61,7 +66,8 @@
 }
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        [DDCatchCrash removWithFileName:[DDCatchCrash crashLogList][indexPath.row]];
+        [DDCatchCrash removWithFileName:_dataArray[indexPath.row]];
+        [_dataArray removeObjectAtIndex:indexPath.row];
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationLeft];
     }
 }
