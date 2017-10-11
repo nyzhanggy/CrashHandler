@@ -40,18 +40,31 @@ void* emptyMethodIMP(){
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        [self swizzleInstanceMethod:@selector(forwardingTargetForSelector:) withNew:@selector(dd_forwardingTargetForSelector:)];
+        [self swizzleInstanceMethod:@selector(methodSignatureForSelector:) withNew:@selector(dd_methodSignatureForSelector:)];
+        [self swizzleInstanceMethod:@selector(forwardInvocation:) withNew:@selector(dd_forwardInvocation:)];
+        
     });
 }
 #endif
 
-- (id)dd_forwardingTargetForSelector:(SEL)aSelector {
+- (NSMethodSignature *)dd_methodSignatureForSelector:(SEL)sel{
     
-    if (IS_CUSTOM_CLASS) {
-        return [_UnregSelObjectProxy sharedInstance];
+    NSMethodSignature *sig;
+    sig = [self dd_methodSignatureForSelector:sel];
+    if (sig) {
+        return sig;
     }
     
-    return [self dd_forwardingTargetForSelector:aSelector];
+    sig = [[_UnregSelObjectProxy sharedInstance] dd_methodSignatureForSelector:sel];
+    if (sig){
+        return sig;
+    }
     
+    return nil;
 }
+
+- (void)dd_forwardInvocation:(NSInvocation *)anInvocation{
+    [anInvocation invokeWithTarget:[_UnregSelObjectProxy sharedInstance] ];
+}
+
 @end
